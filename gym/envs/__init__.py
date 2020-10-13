@@ -1,4 +1,69 @@
-from gym.envs.registration import registry, register, make, spec
+
+from gym.envs.registration import registry, make, spec
+
+def register(id, entry_point, force=True):
+    env_specs = gym.envs.registry.env_specs
+    if id in env_specs.keys():
+        if not force:
+            return
+        del env_specs[id]
+    gym.register(
+        id=id,
+        entry_point=entry_point,
+    )
+
+# Custom Environment for Temperature Control
+# ----------------------------------------------------
+
+thermal_param = ['Vaccan', 'Seism']
+act_space = ['D10', 'D20', 'D50', 'D100', 'D200', 'D500', 'C']
+reward_type = ['Rw10', 'Rw4', 'Rquad', 'Rexp', 'Rrecquad']
+ambtemp_model = ['Tcon', 'Tsin', 'Trand', 'Tsinrand']
+timestep_size = ['t1', 't10', 't30', 't60', 't100']
+
+
+for p in thermal_param:
+    for a in act_space:
+        for r in reward_type:
+            for ta in ambtemp_model:
+                for ts in timestep_size:
+                    register(
+                        id='{}_{}_{}_{}_{}-v0'.format(p,a,r,ta,ts),
+                        entry_point='gym.envs.classic_control:TempCtrlEnvs',
+                        kwargs={'thermalParam': p,
+                                'act_space': a,
+                                'reward_type': r,
+                                'ambtemp_model': ta,
+                                'timestep_size': ts},
+                    )
+
+
+
+"""register(
+    id='VacCan-parametric-v0',
+    entry_point='gym.envs.classic_control:TempCtrlEnvs',
+    kwargs={'thermalParam': 'Vaccan',
+            'act_space': 'D200',
+            'reward_type': 'Rexp',
+            'ambtemp_models': 'Tsin',
+            'timestep_size': 't10'}
+)"""
+
+# ----------------------------------------------------
+# Basic Vacuum Can
+register(
+    id='VacCan-v0',
+    entry_point='gym.envs.classic_control:VacCanEnvDiscrete',
+)
+
+register(
+         id='VacCanC-v0',
+         entry_point='gym.envs.classic_control:VacCanEnvContinuous',
+         )
+
+register(id='TempControl-v0', 
+    entry_point='gym.envs.classic_control:TempEnv', 
+)
 
 # Algorithmic
 # ----------------------------------------
